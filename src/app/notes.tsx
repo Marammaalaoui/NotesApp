@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View }
 import { NoteInputModal } from '../components/NoteInputModal';
 import { NoteItem } from '../components/NoteItem';
 import { errorMessage } from '../lib/errors';
-import { createNote, deleteNote, listNotes } from '../services/notes';
+import { createNote, deleteNote, listNotes, updateNote } from '../services/notes';
 import type { Note, NoteDraft } from '../types';
 
 export default function NotesScreen() {
@@ -35,6 +35,9 @@ export default function NotesScreen() {
       if (editing === 'new') {
         const created = await createNote(draft);
         setNotes((current) => [created, ...current]);
+      } else if (editing) {
+        const updated = await updateNote(editing.id, draft);
+        setNotes((current) => current.map((n) => (n.id === updated.id ? updated : n)));
       }
       setEditing(null);
     } catch (e) {
