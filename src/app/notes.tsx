@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { NoteInputModal } from '../components/NoteInputModal';
 import { NoteItem } from '../components/NoteItem';
 import { errorMessage } from '../lib/errors';
-import { listNotes } from '../services/notes';
-import type { Note } from '../types';
+import { createNote, listNotes } from '../services/notes';
+import type { Note, NoteDraft } from '../types';
 
 export default function NotesScreen() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // null = dialog closed, 'new' = creating, a Note = editing it
   const [editing, setEditing] = useState<Note | 'new' | null>(null);
 
   const load = useCallback(async () => {
@@ -28,6 +29,18 @@ export default function NotesScreen() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const save = async (draft: NoteDraft) => {
+    try {
+      if (editing === 'new') {
+        const created = await createNote(draft);
+        setNotes((current) => [created, ...current]);
+      }
+      setEditing(null);
+    } catch (e) {
+      Alert.alert('Could not save the note', errorMessage(e));
+    }
+  };
 
   if (loading && notes.length === 0) {
     return (
@@ -61,7 +74,21 @@ export default function NotesScreen() {
           <NoteItem note={item} onEdit={setEditing} onDelete={() => {}} />
         )}
       />
-      {/* "+" button and NoteInputModal are unchanged for now */}
+
+      <Pressable
+        style={styles.fab}
+        onPress={() => setEditing('new')}
+        accessibilityRole="button"
+        accessibilityLabel="Add note">
+        <Text style={styles.fabText}>+</Text>
+      </Pressable>
+
+      <NoteInputModal
+        visible={editing !== null}
+        initial={editing && editing !== 'new' ? editing : undefined}
+        onSave={save}
+        onCancel={() => setEditing(null)}
+      />
     </View>
   );
 }
@@ -73,4 +100,16 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', color: '#60646c' },
   error: { color: '#c0392b', textAlign: 'center' },
   retry: { color: '#208AEF', fontSize: 16 },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 28,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#208AEF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabText: { color: '#fff', fontSize: 28, lineHeight: 32 },
 });
