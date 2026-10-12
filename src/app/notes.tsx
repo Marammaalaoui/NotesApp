@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View }
 import { NoteInputModal } from '../components/NoteInputModal';
 import { NoteItem } from '../components/NoteItem';
 import { errorMessage } from '../lib/errors';
-import { createNote, listNotes } from '../services/notes';
+import { createNote, deleteNote, listNotes } from '../services/notes';
 import type { Note, NoteDraft } from '../types';
 
 export default function NotesScreen() {
@@ -42,6 +42,24 @@ export default function NotesScreen() {
     }
   };
 
+  const remove = (note: Note) => {
+    Alert.alert('Delete note', `Delete "${note.title}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteNote(note.id);
+            setNotes((current) => current.filter((n) => n.id !== note.id));
+          } catch (e) {
+            Alert.alert('Could not delete the note', errorMessage(e));
+          }
+        },
+      },
+    ]);
+  };
+
   if (loading && notes.length === 0) {
     return (
       <View style={styles.center}>
@@ -71,7 +89,7 @@ export default function NotesScreen() {
         onRefresh={load}
         ListEmptyComponent={<Text style={styles.empty}>No notes yet.</Text>}
         renderItem={({ item }) => (
-          <NoteItem note={item} onEdit={setEditing} onDelete={() => {}} />
+          <NoteItem note={item} onEdit={setEditing} onDelete={() => remove(item)} />
         )}
       />
 
