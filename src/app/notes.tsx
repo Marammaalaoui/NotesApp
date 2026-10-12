@@ -1,10 +1,9 @@
-// src/app/notes.tsx
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { NoteInputModal, type NoteDraft } from '../components/NoteInputModal';
+import { NoteInputModal } from '../components/NoteInputModal';
 import { NoteItem } from '../components/NoteItem';
-import type { Note } from '../types';
+import type { Note, NoteDraft } from '../types';
 
 export default function NotesScreen() {
   const [notes, setNotes] = useState<Note[]>([

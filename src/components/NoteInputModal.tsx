@@ -1,10 +1,7 @@
-// src/components/NoteInputModal.tsx
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Note } from '../types';
-
-export type NoteDraft = Pick<Note, 'title' | 'content'>;
+import type { Note, NoteDraft } from '../types';
 
 type Props = {
   visible: boolean;
